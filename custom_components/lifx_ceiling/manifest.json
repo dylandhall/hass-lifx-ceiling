@@ -1,0 +1,30 @@
+{
+  "domain": "lifx_ceiling",
+  "name": "LIFX Ceiling Extras",
+  "codeowners": [
+    "@Djelibeybi"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "network"
+  ],
+  "documentation": "https://github.com/Djelibeybi/hass-lifx-ceiling",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/Djelibeybi/hass-lifx-ceiling/issues",
+  "loggers": [
+    "aiolifx",
+    "bitstring"
+  ],
+  "requirements": [
+    "aiolifx==1.1.2",
+    "aiolifx-effects==0.3.2",
+    "aiolifx-themes==0.6.4"
+  ],
+  "version": "2025.1.0",
+  "zeroconf": [
+    {
+      "type": "_matter._tcp.local.",
+      "hostname": "D073D5*"
+    }
+  ]
+}
