@@ -35,10 +35,8 @@ class LIFXCeiling(Light):
     ) -> None:
         """Initialize the LIFX Ceiling."""
         super().__init__(loop, mac_addr, ip_addr, port, parent)
-        _, _, downlight_brightness, _ = self.chain[0][:63]
-        self._configured_downlight_brightness: int = downlight_brightness
-        _, _, uplight_brightness, _ = self.chain[0][63]
-        self._configured_uplight_brightness: int = uplight_brightness
+        self._configured_downlight_brightness: int = self.downlight_brightness
+        self._configured_uplight_brightness: int = self.uplight_brightness
         self._is_downlight_on: bool = False
         self._is_uplight_on: bool = False
 
@@ -48,10 +46,8 @@ class LIFXCeiling(Light):
         assert isinstance(device, Light)  # noqa: S101
         device.__class__ = cls
         assert isinstance(device, LIFXCeiling)  # noqa: S101
-        _, _, downlight_brightness, _ = device.chain[0][:63]
-        device._configured_downlight_brightness = downlight_brightness  # noqa: SLF001
-        _, _, uplight_brightness, _ = device.chain[0][63]
-        device._configured_uplight_brightness = uplight_brightness  # noqa: SLF001
+        device._configured_downlight_brightness = device.downlight_brightness  # noqa: SLF001
+        device._configured_uplight_brightness = device.uplight_brightness  # noqa: SLF001
         device._is_downlight_on = bool(  # noqa: SLF001
             device.power_level > 0 and device.downlight_brightness > 0
         )
@@ -167,9 +163,8 @@ class LIFXCeiling(Light):
         Color is a tuple of hue, saturation, brightness and kelvin values (0-65535).
         Duration is time in milliseconds to transition from current state to color.
         """
-        hue, saturation, uplight_brightness, kelvin = color
-        self.configured_uplight_brightness = uplight_brightness
-        color = (hue, saturation, uplight_brightness, kelvin)
+        hue, saturation, _, kelvin = color
+        color = (hue, saturation, self.configured_uplight_brightness, kelvin)
 
         if self.power_level > 0:
             # The device is already on, just change the color of the uplight.
@@ -219,9 +214,8 @@ class LIFXCeiling(Light):
         Color is a tuple of hue, saturation, brightness and kelvin values (0-65535).
         Duration is the time in milliseconds to transition from current state to color.
         """
-        hue, saturation, downlight_brightness, kelvin = color
-        self._configured_downlight_brightness = downlight_brightness
-        color = (hue, saturation, downlight_brightness, kelvin)
+        hue, saturation, _, kelvin = color
+        color = (hue, saturation, self.configured_downlight_brightness, kelvin)
         colors = [color] * 63
 
         if self.power_level > 0:
