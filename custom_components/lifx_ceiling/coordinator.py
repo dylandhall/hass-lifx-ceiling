@@ -139,16 +139,12 @@ class LIFXCeilingUpdateCoordinator(DataUpdateCoordinator[list[LIFXCeiling]]):
                     * 65535
                 )
                 downlight_saturation = (
-                    call.data.get(
-                        ATTR_DOWNLIGHT_SATURATION, current_downlight_color[1]
-                    )
+                    call.data.get(ATTR_DOWNLIGHT_SATURATION, current_downlight_color[1])
                     / 100
                     * 65535
                 )
                 downlight_brightness = (
-                    call.data.get(
-                        ATTR_DOWNLIGHT_BRIGHTNESS, current_downlight_color[2]
-                    )
+                    call.data.get(ATTR_DOWNLIGHT_BRIGHTNESS, current_downlight_color[2])
                     / 100
                     * 65535
                 )
