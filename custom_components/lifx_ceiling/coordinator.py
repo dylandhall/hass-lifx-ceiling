@@ -134,41 +134,49 @@ class LIFXCeilingUpdateCoordinator(DataUpdateCoordinator[list[LIFXCeiling]]):
                 current_uplight_color = device.uplight_color
 
                 downlight_hue = (
-                    call.data.get(ATTR_DOWNLIGHT_HUE, current_downlight_color[0])
-                    / 360
-                    * 65535
+                    call.data[ATTR_DOWNLIGHT_HUE] / 360 * 65535
+                    if ATTR_DOWNLIGHT_HUE in call.data
+                    else 0
                 )
                 downlight_saturation = (
-                    call.data.get(ATTR_DOWNLIGHT_SATURATION, current_downlight_color[1])
-                    / 100
-                    * 65535
+                    call.data[ATTR_DOWNLIGHT_SATURATION] / 100 * 65535
+                    if ATTR_DOWNLIGHT_SATURATION in call.data
+                    else 0
                 )
                 downlight_brightness = (
-                    call.data.get(ATTR_DOWNLIGHT_BRIGHTNESS, current_downlight_color[2])
-                    / 100
-                    * 65535
+                    call.data[ATTR_DOWNLIGHT_BRIGHTNESS] / 100 * 65535
+                    if ATTR_DOWNLIGHT_BRIGHTNESS in call.data
+                    else 65535
                 )
-                downlight_kelvin = call.data.get(
-                    ATTR_DOWNLIGHT_KELVIN, current_downlight_color[3]
+                downlight_kelvin = call.data.get(ATTR_DOWNLIGHT_KELVIN, 3500)
+                downlight_color = (
+                    downlight_hue,
+                    downlight_saturation,
+                    downlight_brightness,
+                    downlight_kelvin,
                 )
 
                 uplight_hue = (
-                    call.data.get(ATTR_UPLIGHT_HUE, current_uplight_color[0])
-                    / 360
-                    * 65535
+                    call.data[ATTR_UPLIGHT_HUE] / 360 * 65535
+                    if ATTR_UPLIGHT_HUE in call.data
+                    else 0
                 )
                 uplight_saturation = (
-                    call.data.get(ATTR_UPLIGHT_SATURATION, current_uplight_color[1])
-                    / 100
-                    * 65535
+                    call.data[ATTR_UPLIGHT_SATURATION] / 100 * 65535
+                    if ATTR_UPLIGHT_SATURATION in call.data
+                    else 0
                 )
                 uplight_brightness = (
-                    call.data.get(ATTR_UPLIGHT_BRIGHTNESS, current_uplight_color[2])
-                    / 100
-                    * 65535
+                    call.data[ATTR_UPLIGHT_BRIGHTNESS] / 100 * 65535
+                    if ATTR_UPLIGHT_BRIGHTNESS in call.data
+                    else 65535
                 )
-                uplight_kelvin = call.data.get(
-                    ATTR_UPLIGHT_KELVIN, current_uplight_color[3]
+                uplight_kelvin = call.data.get(ATTR_UPLIGHT_KELVIN, 3500)
+                uplight_color = (
+                    uplight_hue,
+                    uplight_saturation,
+                    uplight_brightness,
+                    uplight_kelvin,
                 )
 
                 device.configured_downlight_brightness = downlight_brightness
