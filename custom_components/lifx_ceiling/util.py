@@ -45,6 +45,7 @@ def find_lifx_coordinators(hass: HomeAssistant) -> list[LIFXUpdateCoordinator]:
         possible = [
             entry.runtime_data
             for entry in hass.config_entries.async_loaded_entries(LIFX_DOMAIN)
+            if hasattr(entry, "runtime_data")
         ]
 
     coordinators: list[LIFXUpdateCoordinator] = [
