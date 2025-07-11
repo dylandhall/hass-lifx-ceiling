@@ -199,7 +199,8 @@ class LIFXCeiling(Light):
         If the downlight is off, turn off the entire light.
         """
         if self.downlight_is_on is True:
-            hue, saturation, _, kelvin = self.chain[0][63]
+            hue, saturation, current_brightness, kelvin = self.chain[0][63]
+            self._configured_uplight_brightness = current_brightness
             self.set64(
                 tile_index=0,
                 x=7,
@@ -251,6 +252,7 @@ class LIFXCeiling(Light):
         If the uplight is off, turn off the entire device.
         """
         if self.uplight_is_on:
+            self.configured_downlight_brightness = self.downlight_brightness
             colors = [(h, s, 0, k) for h, s, _, k in self.chain[0][:63]]
             colors.append(self.chain[0][63])
             self.set64(
