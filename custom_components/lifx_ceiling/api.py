@@ -35,6 +35,10 @@ class LIFXCeiling(Light):
     ) -> None:
         """Initialize the LIFX Ceiling."""
         super().__init__(loop, mac_addr, ip_addr, port, parent)
+        self._configured_downlight_brightness: int = 65535
+        self._configured_uplight_brightness: int = 65535
+        self._is_downlight_on: bool = False
+        self._is_uplight_on: bool = False
 
     @classmethod
     def cast(cls, device: Light) -> LIFXCeiling:
@@ -42,6 +46,14 @@ class LIFXCeiling(Light):
         assert isinstance(device, Light)  # noqa: S101
         device.__class__ = cls
         assert isinstance(device, LIFXCeiling)  # noqa: S101
+        device._configured_downlight_brightness = 65535
+        device._configured_uplight_brightness = 65535
+        device._is_downlight_on = bool(
+            device.power_level > 0 and device.downlight_brightness > 0
+        )
+        device._is_uplight_on = bool(
+            device.power_level > 0 and device.uplight_brightness > 0
+        )
         return device
 
     @property
@@ -113,14 +125,34 @@ class LIFXCeiling(Light):
         return hue, saturation, brightness, kelvin
 
     @property
+    def configured_downlight_brightness(self) -> int:
+        """Return the configured downlight brightness."""
+        return self._configured_downlight_brightness
+
+    @configured_downlight_brightness.setter
+    def configured_downlight_brightness(self, value: int) -> None:
+        """Set the configured downlight brightness."""
+        self._configured_downlight_brightness = value
+
+    @property
+    def configured_uplight_brightness(self) -> int:
+        """Return the configured uplight brightness."""
+        return self._configured_uplight_brightness
+
+    @configured_uplight_brightness.setter
+    def configured_uplight_brightness(self, value: int) -> None:
+        """Set the configured uplight brightness."""
+        self._configured_uplight_brightness = value
+
+    @property
     def uplight_is_on(self) -> bool:
         """Return true if power > 0 and uplight brightess > 0."""
-        return bool(self.power_level > 0 and self.uplight_brightness > 0)
+        return self._is_uplight_on
 
     @property
     def downlight_is_on(self) -> bool:
         """Return true if power > 0 and downlight zones max brightness > 0."""
-        return bool(self.power_level > 0 and self.downlight_brightness > 0)
+        return self._is_downlight_on
 
     async def turn_uplight_on(
         self, color: tuple[int, int, int, int], duration: int = 0
@@ -131,6 +163,9 @@ class LIFXCeiling(Light):
         Color is a tuple of hue, saturation, brightness and kelvin values (0-65535).
         Duration is time in milliseconds to transition from current state to color.
         """
+        hue, saturation, _, kelvin = color
+        color = (hue, saturation, self.configured_uplight_brightness, kelvin)
+
         if self.power_level > 0:
             # The device is already on, just change the color of the uplight.
             self.set64(
@@ -145,6 +180,7 @@ class LIFXCeiling(Light):
             await async_execute_lifx(
                 partial(self.set_power, value="on", duration=duration * 1000)
             )
+        self._is_uplight_on = True
 
     async def turn_uplight_off(self, duration: int = 0) -> None:
         """
@@ -167,6 +203,7 @@ class LIFXCeiling(Light):
             await async_execute_lifx(
                 partial(self.set_power, value="off", duration=duration * 1000)
             )
+        self._is_uplight_on = False
 
     async def turn_downlight_on(
         self, color: tuple[int, int, int, int], duration: int = 0
@@ -177,7 +214,10 @@ class LIFXCeiling(Light):
         Color is a tuple of hue, saturation, brightness and kelvin values (0-65535).
         Duration is the time in milliseconds to transition from current state to color.
         """
+        hue, saturation, _, kelvin = color
+        color = (hue, saturation, self.configured_downlight_brightness, kelvin)
         colors = [color] * 63
+
         if self.power_level > 0:
             colors.append(self.chain[0][63])
             self.set64(
@@ -191,6 +231,7 @@ class LIFXCeiling(Light):
             await async_execute_lifx(
                 partial(self.set_power, value="on", duration=duration * 1000)
             )
+        self._is_downlight_on = True
 
     async def turn_downlight_off(self, duration: int = 0) -> None:
         """
@@ -214,3 +255,4 @@ class LIFXCeiling(Light):
             await async_execute_lifx(
                 partial(self.set_power, value="off", duration=duration * 1000)
             )
+        self._is_downlight_on = False

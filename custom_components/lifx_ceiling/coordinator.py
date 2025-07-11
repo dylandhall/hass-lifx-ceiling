@@ -24,6 +24,7 @@ from .const import (
     ATTR_UPLIGHT_HUE,
     ATTR_UPLIGHT_KELVIN,
     ATTR_UPLIGHT_SATURATION,
+    ATTR_POWER,
     DOMAIN,
 )
 from .util import find_lifx_coordinators
@@ -114,53 +115,7 @@ class LIFXCeilingUpdateCoordinator(DataUpdateCoordinator[list[LIFXCeiling]]):
         if not isinstance(device_ids, list):
             device_ids = [device_ids]
 
-        downlight_hue = (
-            call.data[ATTR_DOWNLIGHT_HUE] / 360 * 65535
-            if ATTR_DOWNLIGHT_HUE in call.data
-            else 0
-        )
-        downlight_saturation = (
-            call.data[ATTR_DOWNLIGHT_SATURATION] / 100 * 65535
-            if ATTR_DOWNLIGHT_SATURATION in call.data
-            else 0
-        )
-        downlight_brightness = (
-            call.data[ATTR_DOWNLIGHT_BRIGHTNESS] / 100 * 65535
-            if ATTR_DOWNLIGHT_BRIGHTNESS in call.data
-            else 65535
-        )
-        downlight_kelvin = call.data.get(ATTR_DOWNLIGHT_KELVIN, 3500)
-        downlight_color = (
-            downlight_hue,
-            downlight_saturation,
-            downlight_brightness,
-            downlight_kelvin,
-        )
-
-        uplight_hue = (
-            call.data[ATTR_UPLIGHT_HUE] / 360 * 65535
-            if ATTR_UPLIGHT_HUE in call.data
-            else 0
-        )
-        uplight_saturation = (
-            call.data[ATTR_UPLIGHT_SATURATION] / 100 * 65535
-            if ATTR_UPLIGHT_SATURATION in call.data
-            else 0
-        )
-        uplight_brightness = (
-            call.data[ATTR_UPLIGHT_BRIGHTNESS] / 100 * 65535
-            if ATTR_UPLIGHT_BRIGHTNESS in call.data
-            else 65535
-        )
-        uplight_kelvin = call.data.get(ATTR_UPLIGHT_KELVIN, 3500)
-        uplight_color = (
-            uplight_hue,
-            uplight_saturation,
-            uplight_brightness,
-            uplight_kelvin,
-        )
-
-        transition = call.data[ATTR_TRANSITION]
+        transition = call.data.get(ATTR_TRANSITION, 0)
 
         for device_id in device_ids:
             device_registry = dr.async_get(self.hass)
@@ -175,24 +130,82 @@ class LIFXCeilingUpdateCoordinator(DataUpdateCoordinator[list[LIFXCeiling]]):
                     device = self._ceiling_coordinators.get(identifier[1]).device
 
             if device is not None and isinstance(device, LIFXCeiling):
+                current_downlight_color = device.downlight_color
+                current_uplight_color = device.uplight_color
+
+                downlight_hue = (
+                    call.data.get(ATTR_DOWNLIGHT_HUE, current_downlight_color[0])
+                    / 360
+                    * 65535
+                )
+                downlight_saturation = (
+                    call.data.get(ATTR_DOWNLIGHT_SATURATION, current_downlight_color[1])
+                    / 100
+                    * 65535
+                )
+                downlight_brightness = (
+                    call.data.get(ATTR_DOWNLIGHT_BRIGHTNESS, current_downlight_color[2])
+                    / 100
+                    * 65535
+                )
+                downlight_kelvin = call.data.get(
+                    ATTR_DOWNLIGHT_KELVIN, current_downlight_color[3]
+                )
+
+                uplight_hue = (
+                    call.data.get(ATTR_UPLIGHT_HUE, current_uplight_color[0]) / 360 * 65535
+                )
+                uplight_saturation = (
+                    call.data.get(ATTR_UPLIGHT_SATURATION, current_uplight_color[1])
+                    / 100
+                    * 65535
+                )
+                uplight_brightness = (
+                    call.data.get(ATTR_UPLIGHT_BRIGHTNESS, current_uplight_color[2])
+                    / 100
+                    * 65535
+                )
+                uplight_kelvin = call.data.get(
+                    ATTR_UPLIGHT_KELVIN, current_uplight_color[3]
+                )
+
+                device.configured_downlight_brightness = downlight_brightness
+                device.configured_uplight_brightness = uplight_brightness
+
+                if not device.downlight_is_on:
+                    downlight_brightness = 0
+
+                if not device.uplight_is_on:
+                    uplight_brightness = 0
+
+                downlight_color = (
+                    downlight_hue,
+                    downlight_saturation,
+                    downlight_brightness,
+                    downlight_kelvin,
+                )
+                uplight_color = (
+                    uplight_hue,
+                    uplight_saturation,
+                    uplight_brightness,
+                    uplight_kelvin,
+                )
+
+                final_colors = [downlight_color] * 63 + [uplight_color]
+
                 if downlight_brightness == 0 and uplight_brightness == 0:
                     await async_execute_lifx(
                         partial(device.set_power, value="off", duration=transition)
                     )
                 else:
-                    colors = [downlight_color] * 63 + [uplight_color]
                     device.set64(
                         tile_index=0,
                         x=0,
                         y=0,
                         width=8,
                         duration=transition,
-                        colors=colors,
+                        colors=final_colors,
                     )
-                    if device.power_level == 0:
-                        await async_execute_lifx(
-                            partial(device.set_power, value="on", duration=transition)
-                        )
 
     async def turn_uplight_on(
         self, device: LIFXCeiling, color: tuple[int, int, int, int], duration: int = 0
