@@ -163,8 +163,9 @@ class LIFXCeiling(Light):
         Color is a tuple of hue, saturation, brightness and kelvin values (0-65535).
         Duration is time in milliseconds to transition from current state to color.
         """
-        hue, saturation, _, kelvin = color
-        color = (hue, saturation, self.configured_uplight_brightness, kelvin)
+        hue, saturation, uplight_brightness, kelvin = color
+        self._configured_uplight_brightness = uplight_brightness
+        color = (hue, saturation, uplight_brightness, kelvin)
 
         if self.power_level > 0:
             # The device is already on, just change the color of the uplight.
@@ -214,8 +215,9 @@ class LIFXCeiling(Light):
         Color is a tuple of hue, saturation, brightness and kelvin values (0-65535).
         Duration is the time in milliseconds to transition from current state to color.
         """
-        hue, saturation, _, kelvin = color
-        color = (hue, saturation, self.configured_downlight_brightness, kelvin)
+        hue, saturation, downlight_brightness, kelvin = color
+        self._configured_downlight_brightness = downlight_brightness
+        color = (hue, saturation, downlight_brightness, kelvin)
         colors = [color] * 63
 
         if self.power_level > 0:
