@@ -48,8 +48,10 @@ class LIFXCeiling(Light):
         assert isinstance(device, Light)  # noqa: S101
         device.__class__ = cls
         assert isinstance(device, LIFXCeiling)  # noqa: S101
-        device._configured_downlight_brightness = 65535  # noqa: SLF001
-        device._configured_uplight_brightness = 65535  # noqa: SLF001
+        _, _, downlight_brightness, _ = device.chain[0][:63]
+        device._configured_downlight_brightness = downlight_brightness  # noqa: SLF001
+        _, _, uplight_brightness, _ = device.chain[0][63]
+        device._configured_uplight_brightness = uplight_brightness  # noqa: SLF001
         device._is_downlight_on = bool(  # noqa: SLF001
             device.power_level > 0 and device.downlight_brightness > 0
         )
