@@ -75,6 +75,8 @@ class LIFXCeiling(Light):
     def uplight_color(self) -> tuple[int, int, int, int]:
         """Return the HSBK values for the last zone."""
         hue, saturation, brightness, kelvin = self.chain[0][63]
+        if hasattr(self, 'configured_uplight_brightness'):
+            brightness = min(brightness, self.configured_uplight_brightness)
         return hue, saturation, brightness, kelvin
 
     @property
@@ -88,7 +90,7 @@ class LIFXCeiling(Light):
     @property
     def uplight_brightness(self) -> int:
         """Return uplight brightness."""
-        if not self.uplight_is_on:
+        if hasattr(self, 'uplight_is_on') and not self.uplight_is_on and hasattr(self, 'configured_uplight_brightness'):
             return self.configured_uplight_brightness
         _, _, brightness, _ = self.chain[0][63]
         return brightness >> 8
@@ -110,7 +112,7 @@ class LIFXCeiling(Light):
     @property
     def downlight_brightness(self) -> int:
         """Return max brightness value for all downlight zones."""
-        if not self.downlight_is_on:
+        if hasattr(self, 'downlight_is_on') and not self.downlight_is_on and hasattr(self, 'configured_downlight_brightness'):
             return self.configured_downlight_brightness
         unscaled = max(brightness for _, _, brightness, _ in self.chain[0][:63])
         return unscaled >> 8
@@ -125,6 +127,8 @@ class LIFXCeiling(Light):
     def downlight_color(self) -> tuple[int, int, int, int]:
         """Return zone 0 hue, saturation, kelvin with max brightness."""
         brightness = max(brightness for _, _, brightness, _ in self.chain[0][:63])
+        if hasattr(self, 'configured_downlight_brightness'):
+            brightness = min(brightness, self.configured_downlight_brightness)
         hue, saturation, _, kelvin = self.chain[0][0]
         return hue, saturation, brightness, kelvin
 
