@@ -24,7 +24,6 @@ from .const import (
     ATTR_UPLIGHT_HUE,
     ATTR_UPLIGHT_KELVIN,
     ATTR_UPLIGHT_SATURATION,
-    ATTR_POWER,
     DOMAIN,
 )
 from .util import find_lifx_coordinators
@@ -36,6 +35,7 @@ if TYPE_CHECKING:
     from homeassistant.components.lifx.coordinator import LIFXUpdateCoordinator
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant, ServiceCall
+
 
 type LIFXCeilingConfigEntry = ConfigEntry[LIFXCeilingUpdateCoordinator]
 
@@ -139,12 +139,16 @@ class LIFXCeilingUpdateCoordinator(DataUpdateCoordinator[list[LIFXCeiling]]):
                     * 65535
                 )
                 downlight_saturation = (
-                    call.data.get(ATTR_DOWNLIGHT_SATURATION, current_downlight_color[1])
+                    call.data.get(
+                        ATTR_DOWNLIGHT_SATURATION, current_downlight_color[1]
+                    )
                     / 100
                     * 65535
                 )
                 downlight_brightness = (
-                    call.data.get(ATTR_DOWNLIGHT_BRIGHTNESS, current_downlight_color[2])
+                    call.data.get(
+                        ATTR_DOWNLIGHT_BRIGHTNESS, current_downlight_color[2]
+                    )
                     / 100
                     * 65535
                 )
@@ -153,7 +157,9 @@ class LIFXCeilingUpdateCoordinator(DataUpdateCoordinator[list[LIFXCeiling]]):
                 )
 
                 uplight_hue = (
-                    call.data.get(ATTR_UPLIGHT_HUE, current_uplight_color[0]) / 360 * 65535
+                    call.data.get(ATTR_UPLIGHT_HUE, current_uplight_color[0])
+                    / 360
+                    * 65535
                 )
                 uplight_saturation = (
                     call.data.get(ATTR_UPLIGHT_SATURATION, current_uplight_color[1])
