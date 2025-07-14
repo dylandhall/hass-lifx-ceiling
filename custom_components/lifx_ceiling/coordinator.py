@@ -130,8 +130,6 @@ class LIFXCeilingUpdateCoordinator(DataUpdateCoordinator[list[LIFXCeiling]]):
                     device = self._ceiling_coordinators.get(identifier[1]).device
 
             if device is not None and isinstance(device, LIFXCeiling):
-                current_downlight_color = device.downlight_color
-                current_uplight_color = device.uplight_color
 
                 downlight_hue = (
                     call.data[ATTR_DOWNLIGHT_HUE] / 360 * 65535
@@ -148,7 +146,7 @@ class LIFXCeilingUpdateCoordinator(DataUpdateCoordinator[list[LIFXCeiling]]):
                     if ATTR_DOWNLIGHT_BRIGHTNESS in call.data
                     else (
                         device.configured_downlight_brightness
-                        if hasattr(device, 'configured_downlight_brightness')
+                        if hasattr(device, "configured_downlight_brightness")
                         else 65535
                     )
                 )
@@ -172,10 +170,10 @@ class LIFXCeilingUpdateCoordinator(DataUpdateCoordinator[list[LIFXCeiling]]):
                 )
                 uplight_brightness = (
                     call.data[ATTR_UPLIGHT_BRIGHTNESS] / 100 * 65535
-                    if ATTR_UPLIGHT_BRIGHTNESS in call.data 
+                    if ATTR_UPLIGHT_BRIGHTNESS in call.data
                     else (
                         device.configured_uplight_brightness
-                        if hasattr(device, 'configured_uplight_brightness')
+                        if hasattr(device, "configured_uplight_brightness")
                         else 65535
                     )
                 )
