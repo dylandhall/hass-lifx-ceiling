@@ -146,7 +146,11 @@ class LIFXCeilingUpdateCoordinator(DataUpdateCoordinator[list[LIFXCeiling]]):
                 downlight_brightness = (
                     call.data[ATTR_DOWNLIGHT_BRIGHTNESS] / 100 * 65535
                     if ATTR_DOWNLIGHT_BRIGHTNESS in call.data
-                    else 65535
+                    else (
+                        device.configured_downlight_brightness
+                        if hasattr(device, 'configured_downlight_brightness')
+                        else 65535
+                    )
                 )
                 downlight_kelvin = call.data.get(ATTR_DOWNLIGHT_KELVIN, 3500)
                 downlight_color = (
@@ -168,8 +172,12 @@ class LIFXCeilingUpdateCoordinator(DataUpdateCoordinator[list[LIFXCeiling]]):
                 )
                 uplight_brightness = (
                     call.data[ATTR_UPLIGHT_BRIGHTNESS] / 100 * 65535
-                    if ATTR_UPLIGHT_BRIGHTNESS in call.data
-                    else 65535
+                    if ATTR_UPLIGHT_BRIGHTNESS in call.data 
+                    else (
+                        device.configured_uplight_brightness
+                        if hasattr(device, 'configured_uplight_brightness')
+                        else 65535
+                    )
                 )
                 uplight_kelvin = call.data.get(ATTR_UPLIGHT_KELVIN, 3500)
                 uplight_color = (
