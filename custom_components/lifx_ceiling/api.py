@@ -76,7 +76,10 @@ class LIFXCeiling(Light):
         """Return the HSBK values for the last zone."""
         hue, saturation, brightness, kelvin = self.chain[0][63]
         if hasattr(self, "configured_uplight_brightness"):
-            brightness = min(brightness, self.configured_uplight_brightness)
+            if not self.uplight_is_on:
+                brightness = self.configured_uplight_brightness
+            else:
+                brightness = min(brightness, self.configured_uplight_brightness)
         return hue, saturation, brightness, kelvin
 
     @property
@@ -136,7 +139,10 @@ class LIFXCeiling(Light):
         """Return zone 0 hue, saturation, kelvin with max brightness."""
         brightness = max(brightness for _, _, brightness, _ in self.chain[0][:63])
         if hasattr(self, "configured_downlight_brightness"):
-            brightness = min(brightness, self.configured_downlight_brightness)
+            if not self.downlight_is_on:
+                brightness = self.configured_downlight_brightness
+            else:
+                brightness = min(brightness, self.configured_downlight_brightness)
         hue, saturation, _, kelvin = self.chain[0][0]
         return hue, saturation, brightness, kelvin
 
